@@ -1,0 +1,22 @@
+#!/bin/bash
+
+
+
+#Main loop
+
+#bash ~/Documents/Projekt/rb-rca5-master/gazebo_client.sh | bash ~/Documents/Projekt/rb-rca5-master/gazebo_server.sh ~/Documents/Projekt/rb-rca5-master/bigworld.world
+
+# Kører gazebo clients + skifter terminalens pwd til den rigtig path
+cd ~/Documents/Projekt/rb-rca5-master/
+bash gazebo_client.sh | bash gazebo_server.sh bigworld.world
+
+# finder gazebo process
+#kill $(ps aux | grep gazebo | head -1 | awk '{print $2}') #finder og dræber  gazebo_client.sh
+#kill $(ps aux | grep gazebo | head -1 | awk '{print $2}') # finder og dræber gazebo_server
+
+#eller bare
+#killall gzclient  #nakker clienten og dermed programmet
+#killall gzserver  #nakker serveren
+#killall bash      #dræber den bash det blev åbnet i, ikke nødvendigt
+
+exit 0

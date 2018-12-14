@@ -1,0 +1,107 @@
+#File: fuzzyobstacleavoidance.fll
+Engine: ObstacleAvoidance
+
+InputVariable: ObsDirection
+ enabled: true
+ range: -1.65 1.65
+ lock-range: false
+ term: BehindLeft Rectangle 1.57 1.65
+ term: FarLeft Triangle 1.3 1.57 1.57 #1.57 1.57
+ term: Left Trapezoid 0 0.1 0.76 1.57 #1.57
+ term: Center Triangle -0.01 0.0 0.01
+ term: Right Trapezoid -1.57 -0.76 -0.1 0 #1.57
+ term: FarRight Triangle -1.57 -1.57 -1.3 #1.57
+ term: BehindRight Rectangle -1.57 -1.65
+
+InputVariable: ObsDistance
+ enabled: true
+ range: 0 10
+ lock-range: false
+ term: VeryClose Ramp 1 0.5
+ term: Close Triangle 0.5 0.9 1.3 
+ term: Far Triangle 1.1 1.3 1.5
+ term: VeryFar Ramp 1.4 1.7 
+
+InputVariable: GoalAngle
+ enabled: true
+ range: -3.14159 3.14159
+ lock-range: false
+ term: FarLeft Ramp 0.87 2.27
+ term: Left Trapezoid  0 0.1 0.87 2.27
+ term: Center Triangle -0.2 0 0.2
+ term: Right Trapezoid -2.27 -0.87 -0.1 0
+ term: FarRight Ramp -0.87 -2.27
+
+InputVariable: GoalDist
+ enabled: true
+ range: 0 100
+ lock-range: false
+ term: Close Ramp 3 0  # 3 0
+ term: Far Ramp 1 3    # 10
+
+OutputVariable: DirCorrection
+ enabled: true
+ range: -2 2
+ lock-range: false
+ aggregation: Maximum
+ defuzzifier: Centroid 100
+ default: 0
+ lock-previous: false
+ term: SharpRight Ramp 0.75 1
+ term: Right Triangle 0.5 0.75 1
+ term: Straight Triangle -0.7 0 0.7
+ term: Left Triangle -1 -0.75 -0.5
+ term: SharpLeft Ramp -0.75 -1
+
+
+OutputVariable: SpeedFactor
+ enabled: true
+ range: -0.5 1.5
+ lock-range: false
+ aggregation: Maximum
+ defuzzifier: Centroid 100
+ default: 0
+ lock-previous: false
+ term: Normal Triangle 0.5 1 1.5
+ term: Slow Triangle 0.2 0.5 0.8
+ term: SemiSlow Triangle 0 0.4 0.8
+ term: VerySlow Triangle 0 0.2 0.4
+
+RuleBlock: mamdani 
+ enabled: true
+ conjunction: Minimum
+ disjunction: Maximum
+ implication: Minimum
+ activation: General
+
+ # Movement
+ rule: if GoalAngle is Left then DirCorrection is Left
+ rule: if GoalAngle is Right then DirCorrection is Right
+ rule: if GoalAngle is Center then DirCorrection is Straight
+ rule: if GoalAngle is FarLeft then DirCorrection is Left
+ rule: if GoalAngle is FarRight then DirCorrection is Right
+
+ # Avoidance
+ rule: if ObsDistance is Close and ObsDirection is Left then DirCorrection is Right
+ rule: if ObsDistance is Close and ObsDirection is Right then DirCorrection is Left
+ rule: if ObsDistance is VeryClose and ObsDirection is Center then DirCorrection is SharpLeft
+ rule: if ObsDistance is VeryClose and ObsDirection is Left then DirCorrection is SharpRight
+ rule: if ObsDistance is VeryClose and ObsDirection is Right then DirCorrection is SharpLeft
+ rule: if GoalDist is Far and ObsDistance is VeryClose and ObsDirection is FarLeft then DirCorrection is Right
+ rule: if GoalDist is Far and ObsDistance is VeryClose and ObsDirection is FarRight then DirCorrection is Left
+
+ # Speed
+ rule: if GoalDist is Far and ObsDistance is VeryFar then SpeedFactor is Normal
+ rule: if GoalDist is Far and ObsDistance is Far then SpeedFactor is Slow
+ rule: if GoalDist is Far and ObsDistance is Close then SpeedFactor is SemiSlow
+ rule: if GoalDist is Far and ObsDistance is VeryClose then SpeedFactor is VerySlow
+ rule: if GoalDist is Close and ObsDistance is VeryFar then SpeedFactor is Slow
+ rule: if GoalDist is Close and ObsDistance is Far then SpeedFactor is Slow
+ rule: if GoalDist is Close and ObsDistance is Close then SpeedFactor is SemiSlow
+ rule: if GoalDist is Close and ObsDistance is VeryClose then SpeedFactor is VerySlow
+ rule: if ObsDirection is BehindLeft and ObsDistance is VeryClose then SpeedFactor is VerySlow
+ rule: if ObsDirection is BehindRight and ObsDistance is VeryClose then SpeedFactor is VerySlow
+ rule: if ObsDirection is BehindLeft and ObsDistance is Close then SpeedFactor is SemiSlow
+ rule: if ObsDirection is BehindRight and ObsDistance is Close then SpeedFactor is SemiSlow
+
+

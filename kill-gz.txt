@@ -1,0 +1,11 @@
+!#/bin/bash
+
+clear
+
+#kill $(ps aux | grep pts/ | grep /usr/bin | head | awk '{print$2}')
+
+killall gzclient  #nakker clienten og dermed programmet
+killall gzserver  #nakker serveren
+
+
+exit 0
